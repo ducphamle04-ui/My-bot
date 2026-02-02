@@ -48,7 +48,17 @@ async def pick(ctx, *, choices: str):
     await ctx.send(f"🤔 Mình chọn: **{selection.strip()}**")
 
 # --- DÁN TOKEN MỚI VÀO ĐÂY ---
-TOKEN = "MTM3NDIzMTc0Nzc1OTE4MTg5NA.GcKoTY.p1XnF2EtpFeoK8uXVnJTrNxUIC3Vx8AVVWqAYU"
+import os
+
+# Lấy Token từ môi trường hệ thống (Environment Variable)
+TOKEN = os.getenv('TOKEN')
+
+if __name__ == "__main__":
+    if TOKEN:
+        bot.run(TOKEN)
+    else:
+        print("Lỗi: Không tìm thấy TOKEN trong Environment Variables!")
+
 
 if __name__ == "__main__":
    bot.run(os.getenv((TOKEN))
