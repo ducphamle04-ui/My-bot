@@ -1,40 +1,36 @@
 import discord
 from discord.ext import commands
 import random
+import os
+from flask import Flask
+from threading import Thread
 
-# 1. Cấu hình Intents (Quyền hạn)
+# 1. Tạo Server Web nhỏ để Render không tắt bot
+app = Flask('')
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+# 2. Cấu hình Bot
 intents = discord.Intents.default()
-intents.message_content = True  # Quan trọng: Phải bật cái này trên Developer Portal
-intents.members = True          # Quyền xem thông tin thành viên
-
-# 2. Khởi tạo Bot với Prefix 'o'
-bot = commands.Bot(command_prefix='O', intents=intents)
+intents.message_content = True
+bot = commands.Bot(command_prefix='o', intents=intents)
 
 @bot.event
 async def on_ready():
     print(f'Bot {bot.user} đã sẵn sàng!')
 
-# --- TÍNH NĂNG NHẮN TIN THEO YÊU CẦU ---
-
-@bot.event
-async def on_message(message):
-    # Đừng để bot tự trả lời chính nó (tránh lặp vô tận)
-    if message.author == bot.user:
-        return
-
-    # Kiểm tra nếu nội dung tin nhắn có chứa "@aarondeptroai#0000"
-    # Lưu ý: Discord thường dùng ID thay vì tag chữ, nhưng bot vẫn có thể quét nội dung text
-    if "ron oi" in message.content:
-        await message.channel.send("ron con cak")
-
-    # Dòng này cực kỳ quan trọng: Cho phép các lệnh prefix (ohello, oflip...) vẫn chạy được
-    await bot.process_commands(message)
-
-# --- CÁC LỆNH PREFIX 'o' ---
-
+# --- CÁC LỆNH CỦA BẠN ---
 @bot.command()
-async def hello(ctx):
-    await ctx.send(f'Chào {ctx.author.mention}!')
+async def ping(ctx):
+    await ctx.send(f'🏓 Pong! {round(bot.latency * 1000)}ms')
 
 @bot.command()
 async def flip(ctx):
@@ -47,19 +43,8 @@ async def pick(ctx, *, choices: str):
     selection = random.choice(options)
     await ctx.send(f"🤔 Mình chọn: **{selection.strip()}**")
 
-# --- DÁN TOKEN MỚI VÀO ĐÂY ---
-import os
-
-# Lấy Token từ môi trường hệ thống (Environment Variable)
-TOKEN = os.getenv('TOKEN')
-
+# --- CHẠY BOT ---
 if __name__ == "__main__":
-    if TOKEN:
-        bot.run(TOKEN)
-    else:
-        print("Lỗi: Không tìm thấy TOKEN trong Environment Variables!")
-
-
-if __name__ == "__main__":
-   bot.run(os.getenv((TOKEN))
-           
+    keep_alive() # Chạy server web song song với bot
+    TOKEN = os.getenv('TOKEN')
+    bot.run(TOKEN) # Dòng này đã được sửa lỗi ngoặc
